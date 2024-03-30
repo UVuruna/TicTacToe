@@ -1,4 +1,6 @@
 import time
+#from end_check import *
+#from testing import *
 
 class TicTacToe:
     def __init__(self,boardXY,WinN=None) -> None:
@@ -28,13 +30,13 @@ class TicTacToe:
                 if x in startDiag and (self.board_xy-1-y) in startDiag and (x==0 or y==self.board_xy-1):
                     Diagonal_UR.append([(x,y)])
 
-        for line in Diagonal_DR:
-            x,y=Diagonal_DR[0][0]
+        for i,line in enumerate(Diagonal_DR):
+            x,y=Diagonal_DR[i][0]
             for i in range(1,self.board_xy-(x+y)):
                 line.append((x+i,y+i))
 
-        for line in Diagonal_UR:
-            x,y=Diagonal_UR[0][0]
+        for i,line in enumerate(Diagonal_UR):
+            x,y=Diagonal_UR[i][0]
             for i in range(1,self.board_xy-(x+self.board_xy-1-y)):
                 line.append((x+i,y-i))
 
@@ -53,7 +55,7 @@ class TicTacToe:
                     break
         return finishers
 
-    def GameOver(self):
+    def GameOver2(self):
             # Vraca:
         # None ako je kraj partije bez pobednika
         #  1   ako je pobedio X
@@ -102,12 +104,21 @@ class TicTacToe:
                     \nTotal: {(end-start)/10**9:,.3f} s for {n:,.0f} runs'
 
 if __name__=='__main__':
-    TicTac = TicTacToe(3)
-    TicTac.board[0][1] = True
-    print(TicTac.board)
-    TicTac.GameOver()
-    TicTac._TicTacToe__Show_Finishers()
-    
+    TicTac = TicTacToe(5)
+
+
+    suma=0
+    for i,v in enumerate(TicTac.Finishing_Lines()):
+        suma+=1
+        print(v)
+    print('\n',suma)
+
 
     
-    print(TicTac._TicTacToe__MeasuringTime(TicTac.Finishing_Lines))
+
+
+
+    #TicTac.GameOver()
+
+    
+    #print(MeasuringTime(TicTac.Finishing_Lines,10**6))

@@ -8,6 +8,7 @@ def Game_Simulation(game:TicTacToe,measuringTime=False):
     turn=1
     counter=0
     Time =[]
+    Time2 =[]
     while counter<(game.board_xy**2):
         x = random.randint(0,game.board_xy-1)
         y = random.randint(0,game.board_xy-1)
@@ -19,23 +20,26 @@ def Game_Simulation(game:TicTacToe,measuringTime=False):
             turn*=-1
             counter+=1
             end = GameOver(game.finishers,game.board)
-            print(f'Ovo je stanje partije trenutno {end}')
+            end2 = GameOver2(game.finishers,game.board)
+            print(f'\n\nOvo je stanje partije trenutno:\n\t{end} (GameOver) ; {end2} (GameOver2)')
             Show_Matrix(game.board)
             if measuringTime:
                 t = MeasuringTime(GameOver,10**4,text=False,args=[game.finishers,game.board])
                 Time.append(t)
-                print(t,' ms')
+                t2 = MeasuringTime(GameOver2,10**4,text=False,args=[game.finishers,game.board])
+                Time2.append(t2)
+                print(f'\t{t:,.3f} ms (GameOver) ; {t2:,.3f} ms (GameOver2)'
+                      f'\n\tza {abs((t2 if t2>t else t)/(t if t2>t else t2))*100-100:,.2f}% je {'GameOver' if t2>t else 'GameOver2'} brzi')
             else:
                 time.sleep(1)
             if end:
-                return sum(Time)/len(Time)
+                return sum(Time)/len(Time),sum(Time2)/len(Time2)
     else:
-        return sum(Time)/len(Time)
+        return sum(Time)/len(Time),sum(Time2)/len(Time2)
 
 def Show_Matrix(matrix:list,countList=False,XO=True):
     if countList:
         print('Ima ih: ',len(matrix))
-    print()
     for i in matrix:
         if XO is False:
             print(i)
@@ -45,7 +49,6 @@ def Show_Matrix(matrix:list,countList=False,XO=True):
                 a= ' ' if v==None else 'X' if v==True else 'O'
                 line.append(a)
             print(line)
-    print()
 
 def MeasuringTime(func,n=10**5,text=True,args:list=[]):
     start=time.time_ns()
@@ -64,5 +67,9 @@ def MeasuringTime(func,n=10**5,text=True,args:list=[]):
         return ms
 
 if __name__=='__main__':
-    game1 = TicTacToe(7)
-    print('Average time: ',Game_Simulation(game1,measuringTime=True),' ms')
+    game1 = TicTacToe(3)
+    t,t2 = Game_Simulation(game1,measuringTime=True)
+    print('\n   Prosek partije:')
+    print(f'Average time: {t:,.2f} ms (GameOver)')
+    print(f'Average time: {t2:,.2f} ms (GameOver2)')
+    print(f'za {abs((t2 if t2>t else t)/(t if t2>t else t2))*100-100:,.2f}% je {'GameOver' if t2>t else 'GameOver2'} brzi')

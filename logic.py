@@ -55,7 +55,7 @@ class TicTacToe:
                     break
         return finishers
 
-    def GameOver2(self):
+    def GameOver(self):
             # Vraca:
         # None ako je kraj partije bez pobednika
         #  1   ako je pobedio X
@@ -67,12 +67,10 @@ class TicTacToe:
             for square in line:
                 check = self.board[square[1]][square[0]]
                 if check!=None:
-                    if game_over and check==game_over:
-                        continue
-                    elif game_over and check!=game_over and none==False:
-                        continue # OVO NIJE DOBRO -- Razmisliti --
-                    elif not game_over:
+                    if game_over is None:
                         game_over = self.board[square[1]][square[0]]
+                    elif check!=game_over:
+                        break
                 else:
                     none = True
                     break
@@ -80,7 +78,6 @@ class TicTacToe:
                 return -1 if game_over==False else 1
         else:
             return None if none==False else 0 
-            pass # Videti za proveru da li ima None
 
 
 

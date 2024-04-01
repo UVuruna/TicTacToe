@@ -2,6 +2,7 @@
 from logic import TicTacToe
 from end_check import *
 from testing import *
+import random
 import threading
 
 # Namanja cifra Dobija za O i najveca za X
@@ -9,19 +10,18 @@ class AI(threading.Thread,TicTacToe):
 
     def __init__(self, x,y, game:TicTacToe):
         threading.Thread.__init__(self)
-        self.x = x
-        self.y = y
-        self.score = 0
-        self.leafs = 0
-        self.turn = int(game.turn)
-        self.board = [line[:] for line in game.board]
-        self.board_xy = game.board_xy
-        self.finishers = game.finishers
+        self.x              = x
+        self.y              = y
+        self.score          = 0
+        self.leafs          = 0
+        self.lose_in_one    = False
 
-    def Score(self,none,n,board,turn,end):
+    def Score(self,none,n,board,turn,end,N):
         if end is not None:
             self.score+=end
             self.leafs+=1
+            if n==N:
+                self.lose_in_one = True
             return
         for i in range(n):
             local_board = [line[:] for line in board] # Mnogo brze (>3*) od deepcopy
@@ -30,19 +30,23 @@ class AI(threading.Thread,TicTacToe):
             x,y = local_none.pop(i)
             self.Move(x,y,local_board,local_turn)
             local_turn*=-1
-            end = self.GameOver(local_board)
-            
-            self.Score(local_none,n-1,local_board,local_turn,end)
+            end = game.GameOver(local_board)
+
+            self.Score(local_none,n-1,local_board,local_turn,end,N)
 
     def run(self):
-        self.Move(self.x,self.y,self.board)
-        end = self.GameOver()
+        Board = [line[:] for line in game.board]
+        turn = int(game.turn)
+        self.Move(self.x,self.y,Board,turn)
+        end = game.GameOver(Board)
         if end is not None:
             self.score+=1
             self.leafs+=1
+            return
 
-        none = self.None_Position()
-        self.Score(none,len(none),self.board,self.turn,end)
+        none = game.None_Position(Board)
+        n = len(none) ; N = int(n)-1
+        self.Score(none,n,Board,turn*-1,end,N)
 
 def AI_Start(none,game):
     Threads =[]
@@ -61,6 +65,22 @@ def Best_Move(moves_list):
         Moves_Dict[thread.x,thread.y]=100*thread.score/thread.leafs
     return Moves_Dict
 
+def Analyze_Situation(funcTime=Measuring_Execution_Time,func1=AI_Start,func2=Best_Move):
+
+    print(funcTime(func1,n=1,args=[none,game]),'\n')
+
+    Threads = func1(none,game)
+    sum=0
+    for t in Threads:
+        sum+=t.leafs
+        print(f'({t.x},{t.y}) ima score: {t.score:,} sa {t.leafs:,} leafs. Lose in One: {t.lose_in_one}')
+    print(f'\nUkupno poteza: {sum:,}.\n')
+
+    Moves = func2(Threads)
+    for k,v in Moves.items():
+        print(f'potez: {k} : {v:.2f} %')
+
+
 if __name__=='__main__':
     game = TicTacToe(3)
     #game.Move(1,1,game.board)
@@ -74,13 +94,6 @@ if __name__=='__main__':
     #t2 = AI(2,1,game)
     none = game.None_Position()
     #'''
-    print(Measuring_Execution_Time(AI_Start,n=1,args=[none,game]))
-    Threads = AI_Start(none,game)
-    for t in Threads:
-        print(f'({t.x},{t.y}) ima score: {t.score} sa {t.leafs} leafs')
 
-    Moves = Best_Move(Threads)
-    for k,v in Moves.items():
-        print(f'potez: {k} : {v:.2f} %')
-        #'''
+    Analyze_Situation()
 

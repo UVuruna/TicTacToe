@@ -2,6 +2,7 @@
 from logic import TicTacToe
 from end_check import *
 from testing import *
+import random
 import threading
 
 class AI(threading.Thread,TicTacToe):
@@ -13,13 +14,16 @@ class AI(threading.Thread,TicTacToe):
         self.win = 0
         self.lose = 0
         self.draw = 0
+        self.lose_in_one = False
 
-    def Score(self,none,n,board,turn,end):
+    def Score(self,none,n,board,turn,end,N):
         if (end==1 and game.turn==1) or (end==-1 and game.turn==-1):
                 self.win+=1
                 return
         elif (end==1 and game.turn==-1) or (end==-1 and game.turn==1):
             self.lose+=1
+            if n==N:
+                self.lose_in_one = True
             return
         elif end==0:
             self.draw+=1
@@ -33,7 +37,7 @@ class AI(threading.Thread,TicTacToe):
             local_turn*=-1
             end = game.GameOver(local_board)
             
-            self.Score(local_none,n-1,local_board,local_turn,end)
+            self.Score(local_none,n-1,local_board,local_turn,end,N)
 
     def run(self):
         Board = [line[:] for line in game.board]
@@ -52,7 +56,8 @@ class AI(threading.Thread,TicTacToe):
                 self.draw+=1
                 return
         none = game.None_Position(Board)
-        self.Score(none,len(none),Board,turn*-1,end)
+        n = len(none) ; N = int(n)-1
+        self.Score(none,len(none),Board,turn*-1,end,N)
 
 def AI_Start(none,game):
     Threads =[]
@@ -75,6 +80,23 @@ def Best_Move(moves_list):
         Moves_Dict[thread.x,thread.y]=[win,draw,lose]
     return Moves_Dict
 
+def Analyze_Situation(funcTime=Measuring_Execution_Time,func1=AI_Start,func2=Best_Move):
+        
+        print(funcTime(func1,n=1,args=[none,game]),'\n')
+
+        Threads = func1(none,game)
+        sum = 0 ; sumlose=0 ; sumwin=0
+        for t in Threads:
+            sumwin += t.win
+            sumlose +=t.lose
+            sum+=t.draw+t.win+t.lose
+            print(f'({t.x},{t.y}) >> win: {t.win:,} ; draw: {t.draw:,} ; lose: {t.lose:,}. Lose in One: {t.lose_in_one}<<')
+        print(f'\nUkupno poteza: {sum:,}. Od toga pobednicki: {sumwin:,} ({100*sumwin/sum:.2f}%) ; gubitnicki: {sumlose:,} ({100*sumlose/sum:.2f}%)\n')
+
+        Moves = func2(Threads)
+        for k,v in Moves.items():
+            print(f'potez: {k} = win: {v[0]:.2f}%; draw: {v[1]:.2f}%; lose: {v[2]:.2f}%')
+
 if __name__=='__main__':
     game = TicTacToe(3)
     
@@ -91,12 +113,5 @@ if __name__=='__main__':
     #t2 = AI(2,1,game)
     none = game.None_Position()
     #'''
-    print(Measuring_Execution_Time(AI_Start,n=1,args=[none,game]))
-    Threads = AI_Start(none,game)
-    for t in Threads:
-        print(f'({t.x},{t.y}) >> win: {t.win} ; draw: {t.draw} ; lose: {t.lose} <<\n')
 
-    Moves = Best_Move(Threads)
-    for k,v in Moves.items():
-        print(f'potez: {k} = win: {v[0]:.2f}%; draw: {v[1]:.2f}%; lose: {v[2]:.2f}%')
-
+    Analyze_Situation()

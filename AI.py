@@ -4,6 +4,7 @@ from end_check import *
 from testing import *
 import threading
 
+# Namanja cifra Dobija za O i najveca za X
 class AI(threading.Thread,TicTacToe):
 
     def __init__(self, x,y, game:TicTacToe):
@@ -17,7 +18,11 @@ class AI(threading.Thread,TicTacToe):
         self.board_xy = game.board_xy
         self.finishers = game.finishers
 
-    def Score(self,none,n,board,turn):
+    def Score(self,none,n,board,turn,end):
+        if end is not None:
+            self.score+=end
+            self.leafs+=1
+            return
         for i in range(n):
             local_board = [line[:] for line in board] # Mnogo brze (>3*) od deepcopy
             local_none = none[:]
@@ -26,21 +31,18 @@ class AI(threading.Thread,TicTacToe):
             self.Move(x,y,local_board,local_turn)
             local_turn*=-1
             end = self.GameOver(local_board)
-            if end is not None:
-                self.score+=end
-                self.leafs+=1
-                return
-            self.Score(local_none,n-1,local_board,local_turn)
+            
+            self.Score(local_none,n-1,local_board,local_turn,end)
 
     def run(self):
         self.Move(self.x,self.y,self.board)
         end = self.GameOver()
-        if end is None:
-            none = self.None_Position()
-            self.Score(none,len(none),self.board,self.turn)
-        else:
+        if end is not None:
             self.score+=1
             self.leafs+=1
+
+        none = self.None_Position()
+        self.Score(none,len(none),self.board,self.turn,end)
 
 def AI_Start(none,game):
     Threads =[]
@@ -61,7 +63,7 @@ def Best_Move(moves_list):
 
 if __name__=='__main__':
     game = TicTacToe(3)
-    game.Move(1,1,game.board)
+    #game.Move(1,1,game.board)
     #game.Move(2,2,game.board)
     #game.Move(1,2,game.board)
     #game.Move(2,1,game.board)

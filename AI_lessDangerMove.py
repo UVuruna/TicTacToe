@@ -16,7 +16,12 @@ class AI(threading.Thread,TicTacToe):
         self.win = False
         self.lose = 0
 
-    def Score(self,none,n,board,turn):
+    def Score(self,none,n,board,turn,end):
+        if end is not None:
+                self.leafs+=1
+                if (end==1 and game.turn==-1) or (end==-1 and game.turn==1):
+                    self.lose+=1
+                return
         for i in range(n):
             local_board = [line[:] for line in board]
             local_none = none[:]
@@ -25,22 +30,14 @@ class AI(threading.Thread,TicTacToe):
             self.Move(x,y,local_board,local_turn)
             local_turn*=-1
             end = game.GameOver(local_board)
-            if end is not None:
-                self.leafs+=1
-                if (end==1 and game.turn==-1) or (end==-1 and game.turn==1):
-                    self.lose+=1
-                return
-            self.Score(local_none,n-1,local_board,local_turn)
+            self.Score(local_none,n-1,local_board,local_turn,end)
 
     def run(self):
         Board = [line[:] for line in game.board]
         turn = int(game.turn)
         self.Move(self.x,self.y,Board,turn)
         end = game.GameOver(Board)
-        if end is None:
-            none = game.None_Position(Board)
-            self.Score(none,len(none),Board,turn*-1)
-        else:
+        if end is not None:
             if (end==1 and game.turn==1) or (end==-1 and game.turn==-1):
                 self.win=True
                 self.leafs+=1
@@ -49,6 +46,8 @@ class AI(threading.Thread,TicTacToe):
                 self.lose+=1
                 self.leafs+=1
                 return
+        none = game.None_Position(Board)
+        self.Score(none,len(none),Board,turn*-1,end)
 
 def AI_Start(none,game):
     Threads =[]
@@ -71,9 +70,9 @@ def Best_Move(moves_list):
 if __name__=='__main__':
     game = TicTacToe(3)
     
-    game.Move(1,1,game.board)
-    game.Move(2,2,game.board)
-    game.Move(1,2,game.board)
+    #game.Move(1,1,game.board)
+    #game.Move(2,2,game.board)
+    #game.Move(1,2,game.board)
     #game.Move(1,2,game.board)
     #game.Move(0,2,game.board)
     #game.Move(2,0,game.board)

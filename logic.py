@@ -1,6 +1,3 @@
-import time
-#from end_check import *
-#from testing import *
 
 class TicTacToe:
     def __init__(self,boardXY,WinN=None) -> None:
@@ -8,6 +5,7 @@ class TicTacToe:
         self.win_strike_number:int  = WinN if WinN!=None else 3 if boardXY<5 else 4 if boardXY<8 else 5
         self.finishers:list         = self.Finishers()
         self.board                  = self.Board_Create()
+        self.turn                   = 1
 
     def Board_Create(self):
         Board = [[None]*self.board_xy for _ in range(self.board_xy)] # Table[0][1] je gornji srednji ; Table[1][2] je srednji desno
@@ -55,67 +53,82 @@ class TicTacToe:
                     break
         return finishers
 
-    def GameOver(self):
+    def GameOver(self,Board=False):
             # Vraca:
         # None ako je kraj partije bez pobednika
         #  1   ako je pobedio X
         # -1   ako je pobedio O
         #  0   ako niko nije pobedio (jos se igra)
-        none = False
-        for line in self.finishers:
-            game_over = []
+        board = Board if Board else self.board
+        finishers = self.finishers
+        end = True
+        for line in finishers:
+            game_over = None
             for square in line:
-                check = self.board[square[1]][square[0]]
+                check = board[square[1]][square[0]]
                 if check!=None:
                     if game_over is None:
-                        game_over = self.board[square[1]][square[0]]
+                        game_over = board[square[1]][square[0]]
                     elif check!=game_over:
                         break
                 else:
-                    none = True
+                    end = False
                     break
             else:
                 return -1 if game_over==False else 1
         else:
-            return None if none==False else 0 
+            return None if end==False else 0 
 
+    def GameOver2(self,Board=False):
+            # Vraca:
+        #  1   ako je pobedio X
+        # -1   ako je pobedio O
+        #  0   ako niko nije pobedio
+        finishers = self.finishers
+        board = Board if Board else self.board
+        for line in finishers:
+            game_over = None
+            for square in line:
+                check = board[square[1]][square[0]]
+                if check!=None:
+                    if game_over is None:
+                        game_over = board[square[1]][square[0]]
+                    elif check!=game_over:
+                        break
+                else:
+                    break
+            else:
+                return -1 if game_over==False else 1
+        else:
+            return  0 
 
+    def None_Position(self,board=None):
+        NoneList=[]
+        for y,line in enumerate(self.board if not board else board):
+            for x,value in enumerate(line):
+                if value is None:
+                    NoneList.append((x,y))
+        return NoneList
 
+    def XO(self,turn=None):
+        if not turn:
+            return self.turn==1 # ili jos vise fensi return 'self.turn!=-1'
+        else:
+            return turn==1
+        
+    def Move(self,x,y,board,turn=None):
+        if not turn:
+            board[y][x] = self.XO()
+            self.turn*=-1
+        else:
+            board[y][x] = self.XO(turn)
 
-
-
-
-    # TESTING FUNCTIONS
-
-    def __Show_Finishers(self):
-        print('Ima ih: ',len(self.finishers))
-        for i in self.finishers:
-            print(i)
-
-    def __MeasuringTime(self,func,n=10**5):
-        start=time.time_ns()
-        for _ in range(n):
-            func()
-        end=time.time_ns()
-        return f'{func}\nOne run of function: {10**6*(end-start)/(n*10**9):,.3f} mikro sec\
-                    \nTotal: {(end-start)/10**9:,.3f} s for {n:,.0f} runs'
 
 if __name__=='__main__':
     TicTac = TicTacToe(5)
-
 
     suma=0
     for i,v in enumerate(TicTac.Finishing_Lines()):
         suma+=1
         print(v)
-    print('\n',suma)
-
-
-    
-
-
-
-    #TicTac.GameOver()
-
-    
-    #print(MeasuringTime(TicTac.Finishing_Lines,10**6))
+    print(suma)

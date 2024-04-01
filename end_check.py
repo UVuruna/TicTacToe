@@ -2,7 +2,7 @@
 
 
     
-def GameOver(finishers:list, board:list): # Faster - Sto je duza partija to se vise povecava razlika u brzini
+def GameOver(finishers:list, board:list): # Faster - (>2 times)Sto je duza partija to se vise povecava razlika u brzini
         # Vraca:
     # None ako je kraj partije bez pobednika
     #  1   ako je pobedio X

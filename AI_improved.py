@@ -9,14 +9,14 @@ class AI(threading.Thread,TicTacToe):
     turn = None
 
     @staticmethod
-    def Start(game:TicTacToe):
-        AI.board = game.board
-        AI.none = game.None_Position(AI.board)
-        AI.finishers = game.finishers
-        AI.turn = game.turn
-        Threads = []
+    def Start(board,finishers,noneList,turn):
+        AI.board     = board
+        AI.finishers = finishers
+        AI.none      = noneList
+        AI.turn      = turn
 
-        for xy in AI.none:
+        Threads = []
+        for xy in noneList:
             t = AI(xy[0],xy[1])
             t.start()
             Threads.append(t)
@@ -34,26 +34,24 @@ class AI(threading.Thread,TicTacToe):
 
     def run(self):
         Board = [line[:] for line in AI.board]
-        turn = int(AI.turn)
-        self.Move(self.x,self.y,Board,turn)
+        self.Move(self.x,self.y,Board,AI.turn)
         
         none = list(AI.none)
         none.remove((self.x,self.y))
         n = len(none) ; N = int(n)-1
         end = self.GameOver(Board,AI.finishers,n)
-
         if end is not None:
-            if (end==1 and self.turn==1) or (end==-1 and self.turn==-1):
+            if (end==1 and AI.turn==1) or (end==-1 and AI.turn==-1):
                 self.win+=1
                 return
-            elif (end==1 and self.turn==-1) or (end==-1 and self.turn==1):
+            elif (end==1 and AI.turn==-1) or (end==-1 and AI.turn==1):
                 self.lose+=1
                 return
             elif end==0:
                 self.draw+=1
                 return
             
-        self.Score(none,n,Board,turn*-1,end,N)
+        self.Score(none,n,Board,AI.turn*-1,end,N)
 
     def Score(self,none,n,board,turn,end,N):
         if (end==1 and self.turn==1) or (end==-1 and self.turn==-1):

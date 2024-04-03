@@ -1,39 +1,34 @@
 import time
 import random
 from logic import TicTacToe
-from end_check import *
+import testing_AI as ai
 
+def Game_Simulation(pc1,pc2,PRINT):
+    game = TicTacToe(3)
+    end=None
 
-def Game_Simulation(game:TicTacToe,measuringTime=False):
-    counter=0
-    Time =[]
-    Time2 =[]
-    while counter<(game.board_xy**2):
-        x = random.randint(0,game.board_xy-1)
-        y = random.randint(0,game.board_xy-1)
-        while game.board[y][x] is not None:
-            x = random.randint(0,game.board_xy-1)
-            y = random.randint(0,game.board_xy-1)
+    while end is None:
+        ts = time.time_ns() # <<<
+        if game.turn==1:
+            threads=pc1.Start(game)
+            x,y=pc1.BestMove(threads,game.turn) if pc1.__module__=='AI_Basic' else pc1.BestMove(threads)
+
         else:
-            game.Move(x,y)
-            counter+=1
-            end2 = GameOver2(game.finishers,game.board)
-            end = game.GameOver()
-            print(f'\n\nOvo je stanje partije trenutno {counter}. potez:\n\t{end} (GameOver) ; {end2} (GameOver2)')
+            threads=pc2.Start(game)
+            x,y=pc2.BestMove(threads,game.turn) if pc2.__module__=='AI_Basic' else pc2.BestMove(threads)
+
+        game.Move(x,y,game.board,game.turn)
+        game.turn*=-1
+        end = game.GameOver(game.board,game.finishers,len(game.None_Position()))
+
+        te = time.time_ns() # <<<
+        if PRINT:
+            print(f'\nX: {pc1.__module__}: execution = {(te-ts)/10**6:,.2f} ms ; best move = {x,y}' if game.turn==-1 else\
+                f'\nO: {pc2.__module__}: execution = {(te-ts)/10**6:,.2f} ms ; best move = {x,y}')
             Show_Matrix(game.board)
-            if measuringTime:
-                t2 = Measuring_Execution_Time(game.GameOver2,10**5,text=False)
-                Time2.append(t2)
-                t = Measuring_Execution_Time(game.GameOver,10**5,text=False)
-                Time.append(t)
-                print(f'\t{t:,.3f} ms (GameOver) ; {t2:,.3f} ms (GameOver2)'
-                      f'\n\tza {abs((t2 if t2>t else t)/(t if t2>t else t2))*100-100:,.2f}% je {'GameOver' if t2>t else 'GameOver2'} brzi')
-            else:
-                time.sleep(1)
-            if end:
-                return sum(Time)/len(Time),sum(Time2)/len(Time2)
     else:
-        return sum(Time)/len(Time),sum(Time2)/len(Time2)
+        kraj = 'X-WIN' if end==1 else 'O-WIN' if end==-1 else 'DRAW'
+        print(f'\nPartija zavrsena: {kraj}\n')
 
 def Show_Matrix(matrix:list,countList=False,XO=True):
     if countList:
@@ -47,9 +42,8 @@ def Show_Matrix(matrix:list,countList=False,XO=True):
                 a= ' ' if v==None else 'X' if v==True else 'O'
                 line.append(a)
             print(line)
-    print()
 
-def Measuring_Execution_Time(func,n=10**5,text=True,args:list=[],iter=False):
+def Measuring_Execution_Time(func,n=10**5,text=True,args:list=[],iter=False): # za game over je sluzilo
     start=time.time_ns()
     for _ in range(n):
         if not args:
@@ -72,7 +66,7 @@ def Measuring_Execution_Time(func,n=10**5,text=True,args:list=[],iter=False):
 def Showcase_Print(func:callable,*args):
     print(f'{func} {args}: {func(*args):,}')
 
-def Yield_Total_Combinations(s:set):
+def Yield_Total_Combinations(s:set): # Bezveze
     for i in sorted(s):
         yield i
         s.remove(i)
@@ -80,7 +74,7 @@ def Yield_Total_Combinations(s:set):
             yield i+j
         s.add(i)
 
-def List_Total_Combinations(s:list, results:list):
+def List_Total_Combinations(s:list, results:list):  # Bezveze
     for i in range(len(s)):
         results.append(s[i])
         tempset = s[:]
@@ -121,16 +115,23 @@ def Combination_Tree(n,lista): # n == sum count None
         counter+=1
         Combination_Tree(n-1,local_list)
 
+def FunctionTiming(func:callable,n,unit,*args):
+    ts = time.time_ns()
+    for _ in range(n):
+        func(*args)
+    te = time.time_ns()
+    coef = 1 if unit=='ns' else 10**3 if unit=='micro s' else 10**6 if unit=='ms' else 10**9
+    print(f'{(te-ts)/(n*coef):,.2f} {unit}')
 
 
 if __name__=='__main__':
 
     game1 = TicTacToe(3)
-    t,t2 = Game_Simulation(game1,measuringTime=True)
-    print('\n   Prosek partije:')
-    print(f'Average time: {t:,.2f} ms (GameOver)')
-    print(f'Average time: {t2:,.2f} ms (GameOver2)')
-    print(f'za {abs((t2 if t2>t else t)/(t if t2>t else t2))*100-100:,.2f}% je {'GameOver' if t2>t else 'GameOver2'} brzi')
+    #Game_Simulation(ai.basic.AI,ai.safe.AI,game1,True)
+
+    FunctionTiming(Total_Combinations_up_to_Level,10**5,'micro s',25,4)
+    FunctionTiming(Game_Simulation,30,'s',ai.improved.AI,ai.improved.AI,False)
+    print(f'{Total_Combinations_up_to_Level(25,25):,}')
 
 
 

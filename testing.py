@@ -127,11 +127,11 @@ def FunctionTiming(func:callable,n,unit,*args):
 if __name__=='__main__':
 
     game1 = TicTacToe(3)
-    #Game_Simulation(ai.basic.AI,ai.safe.AI,game1,True)
+    Game_Simulation(ai.basic.AI,ai.safe.AI,game1)
 
-    FunctionTiming(Total_Combinations_up_to_Level,10**5,'micro s',25,4)
-    FunctionTiming(Game_Simulation,30,'s',ai.improved.AI,ai.improved.AI,False)
-    print(f'{Total_Combinations_up_to_Level(25,25):,}')
+    #FunctionTiming(Total_Combinations_up_to_Level,10**5,'micro s',25,4)
+    #FunctionTiming(Game_Simulation,30,'s',ai.improved.AI,ai.improved.AI,False)
+    #print(f'{Total_Combinations_up_to_Level(25,25):,}')
 
 
 

@@ -45,7 +45,7 @@ def Measuring_Execution_Time(ai:list,best_move:list,game):
 if __name__=='__main__':
     game = TicTacToe(3)
 
-    game.Move(1,1,game.board,game.turn) ; game.turn*=-1
+    #game.Move(1,1,game.board,game.turn) ; game.turn*=-1
     #game.Move(0,0,game.board,game.turn) ; game.turn*=-1
     #game.Move(1,0,game.board,game.turn) ; game.turn*=-1
     #game.Move(0,1,game.board,game.turn) ; game.turn*=-1

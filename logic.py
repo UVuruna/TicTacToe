@@ -53,22 +53,27 @@ class TicTacToe:
         return finishers
 
     def GameOver(self,board,finishers,none):
-            # Vraca:
-        #  0        ako je kraj partije bez pobednika
-        #  1        ako je pobedio X
-        # -1        ako je pobedio O
-        #  None     ako niko nije pobedio (jos se igra)
         for line in finishers:
             game_over = None
             for square in line:
                 check = board[square[1]][square[0]]
                 if check!=None:
                     if game_over is None:
-                        game_over = board[square[1]][square[0]]
+                        game_over = check
                     elif check!=game_over:
                         break
                 else:
                     break
+            else:
+                return 1 if game_over else -1
+        return None if none else 0
+    
+    def Evaluate(self,board,finishers,none):
+        for line in finishers:
+            game_over = list()
+            for square in line:
+                check = board[square[1]][square[0]]
+                game_over.append(check)
             else:
                 return 1 if game_over else -1
         return None if none else 0
@@ -84,11 +89,29 @@ class TicTacToe:
     def Move(self,x,y,board,turn):
         board[y][x] = turn==1
 
+    def Total_Leafs_PerLevel(self,N,n): # last 2 levels == same leaf number ; N==Depth ; n==Level
+        if n==1: # moze n==0 then return 1
+            return N
+        return self.Total_Leafs_PerLevel(N,n-1)*(N+1-n)
+
+    def Total_Combinations_up_to_Level(self,N,n):
+        suma=0
+        for i in range(1,n+1):
+            suma+=self.Total_Leafs_PerLevel(N,i)
+        return suma
+
+    def Work_per_Thread(self,length):
+        none = len(self.None_Position())
+        for n in range(none,0,-1):
+            x = self.Total_Combinations_up_to_Level(none,n)
+            if x<10**7:
+                return x,n
+            
 if __name__=='__main__':
     TicTac = TicTacToe(5)
+    for i in TicTac.Finishing_Lines():
+        print(i)
 
-    suma=0
-    for i,v in enumerate(TicTac.Finishing_Lines()):
-        suma+=1
-        print(v)
-    print(suma)
+    print(TicTac.Work_per_Thread())
+    print(f'{TicTac.Total_Leafs_PerLevel(49,49):,}')
+    print(f'{TicTac.Total_Leafs_PerLevel(25,25):,}')

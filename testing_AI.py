@@ -1,9 +1,8 @@
-import AI_Basic as basic
-import AI_Improved as improved
-import AI_Safe as safe
+import AI_multiprocessing as m
+import AI_threading as t
 from logic import TicTacToe
 import time
-import multiprocessing
+from testing import Show_Matrix
 
 def Analyze_Moves(aiList,bestmoveList,board,finishers,noneList,turn,PRINT):
     SUMA=[]
@@ -47,9 +46,9 @@ def Analyze_Threads(Threads,PRINT=True):
                     print(f'({t.x},{t.y}) ima score: {t.score:,} ({100*t.score/t.leafs:.2f}%). Total {t.leafs:,} leafs. Lose in One: {t.lose_in_one}')
                 except AttributeError:
                     print(f'({t.x},{t.y}) lose: {100*t.lose/t.leafs:.2f}%. Total {t.leafs:,} leafs. Win in One:{t.win_in_one}. Lose in One: {t.lose_in_one}')
-        if PRINT:
-            print(f'Ukupno poteza: {sum:,}.')
-            print()
+    if PRINT:
+        print(f'Ukupno poteza: {sum:,}.')
+        print()
 
 def MakeThreads(board,finishers,noneList,turn):
     X = []
@@ -82,10 +81,44 @@ def Measuring_Time(board,finishers,noneList,turn):
 
 if __name__=='__main__':
     game = TicTacToe(3)
+    game.Move(1,1,game.board,game.turn) ; game.turn*=-1
+    game.Move(0,0,game.board,game.turn) ; game.turn*=-1
+    game.Move(2,0,game.board,game.turn) ; game.turn*=-1
+    game.Move(0,2,game.board,game.turn) ; game.turn*=-1
+    game.Move(0,1,game.board,game.turn) ; game.turn*=-1
 
-    #game.Move(1,1,game.board,game.turn) ; game.turn*=-1
-    #game.Move(0,0,game.board,game.turn) ; game.turn*=-1
-    #game.Move(1,0,game.board,game.turn) ; game.turn*=-1
+    Show_Matrix(game.board)
+
+    for clas in [m.Improved,m.Basic,m.Safe]:
+        Total  = []
+        for i in range(1):
+            start = time.time_ns()
+            xy = m.MultiAnalyze(clas,game.board,game.finishers,game.turn,game.None_Position())
+            ende = time.time_ns()
+            ms = (ende-start)/10**6
+            Total.append(ms)
+        else:
+            print(f'\nTotal average {str(clas)[27:-2]} je: {sum(Total)/len(Total):,.2f} ms. Best move: {xy}')
+
+    for clas in [t.Improved,t.Basic,t.Safe]:
+        Total  = []
+        for i in range(1000):
+            start = time.time_ns()
+            List = clas.Start(game.board,game.finishers,game.turn,game.None_Position())
+            xy = clas.BestMove(List) if str(clas)[21:-2]!='Basic' else clas.BestMove(List,game.turn)
+            ende = time.time_ns()
+            #Analyze_Threads(List)
+            ms = (ende-start)/10**6
+            Total.append(ms)
+        else:
+            print(f'\nTotal average {str(clas)[21:-2]} je: {sum(Total)/len(Total):,.2f} ms. Best move: {xy}')
+
+    '''
+    game = TicTacToe(3)
+
+    game.Move(1,1,game.board,game.turn) ; game.turn*=-1
+    game.Move(0,0,game.board,game.turn) ; game.turn*=-1
+    game.Move(1,0,game.board,game.turn) ; game.turn*=-1
     #game.Move(0,1,game.board,game.turn) ; game.turn*=-1
     #game.Move(0,2,game.board,game.turn) ; game.turn*=-1
     #game.Move(1,2,game.board,game.turn) ; game.turn*=-1
@@ -98,7 +131,7 @@ if __name__=='__main__':
     BEST = [basic.AI.BestMove,improved.AI.BestMove,safe.AI.BestMove]
     Measuring_Execution_Time(START,BEST,game.board,game.finishers,noneList,game.turn)
     Analyze_Moves(START,BEST,game.board,game.finishers,noneList,game.turn,True)
-
+    '''
 
     '''
     ALL =[]

@@ -100,18 +100,19 @@ class TicTacToe:
             suma+=self.Total_Leafs_PerLevel(N,i)
         return suma
 
-    def Work_per_Thread(self,length=True):
+    def Work_per_Thread(self):
         none = len(self.None_Position())
         for n in range(none,0,-1):
             x = self.Total_Combinations_up_to_Level(none,n)
-            if x<13**6:
-                return x,n
+            if x<10**7:
+                return x,n, x/none
             
 if __name__=='__main__':
     TicTac = TicTacToe(5)
     for i in TicTac.Finishing_Lines():
         print(i)
 
-    print(f'{TicTac.Work_per_Thread()[0]:,} moves ; {TicTac.Work_per_Thread()[1]} levels deep')
+    combinations,moves,combPerMove = TicTac.Work_per_Thread()
+    print(f'{combinations:,} moves ; {moves} levels deep ; {combPerMove:,.0f} moves per Thread')
     print(f'{TicTac.Total_Combinations_up_to_Level(9,9):,}')
     print(f'{TicTac.Total_Combinations_up_to_Level(25,25):,}')

@@ -1,7 +1,6 @@
 import time
 import random
 from logic import TicTacToe
-import testing_AI as ai
 
 def Game_Simulation(pc1,pc2,PRINT):
     game = TicTacToe(3)

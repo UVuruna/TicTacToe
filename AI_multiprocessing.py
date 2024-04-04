@@ -1,5 +1,46 @@
 from logic import TicTacToe
 import random
+import multiprocessing
+
+# Much FASTER with MORE CALCULATIONS (Recursions)
+    # Much SLOWER with LESS CALCULATIONS (Recursions)
+
+# Prazan board 3x3 ; 255,168 resenja (vise od toga radi) ; 986,409 poteza (manje od toga radi)
+    # Average 100 repeats Multiprocessing:
+        # Improved je:  335.98 ms    vs     THREADING: 931.07 ms
+        # Basic je:     322.91 ms    vs     THREADING: 903.51 ms
+        # Safe je:      323.15 ms    vs     THREADING: 910.05 ms
+
+# Preostalo 8 poteza ; 25,872 resenja
+    # Average 100 repeats both:
+        # Improved je:  195.01 ms    vs     THREADING: 96.44 ms
+        # Basic je:     192.81 ms    vs     THREADING: 93.02 ms
+        # Safe je:      192.51 ms    vs     THREADING: 92.78 ms
+
+# Preostala 4 poteza ; 21 resenje
+    # Average 1,000 repeats Threading
+        # Improved je:  161.15 ms    vs     THREADING: 0.63 ms
+        # Basic je:     156.86 ms    vs     THREADING: 0.63 ms
+        # Safe je:      155.15 ms    vs     THREADING: 0.64 ms
+
+def worker(thread):
+    thread.run()
+    return thread
+
+def MultiAnalyze(AI,board,finishers,turn,none):
+    Threads = []
+    for xy in none:
+        t = AI(xy[0],xy[1],board,finishers,turn,none)
+        Threads.append(t)
+
+    with multiprocessing.Manager() as manager:
+        shared_list = manager.list(Threads)
+
+        with multiprocessing.Pool(processes=len(none)) as pool:
+            result = pool.map(worker, shared_list)
+
+    xy = AI.BestMove(result) if str(AI)[27:-2]!="Basic" else AI.BestMove(result,turn)
+    return xy
 
 class Improved(TicTacToe):
     def __init__(self, x,y, board,finishers,turn,none):
@@ -19,7 +60,7 @@ class Improved(TicTacToe):
         Board = [line[:] for line in self.board]
         self.Move(self.x,self.y,Board,self.turn)
         self.none.remove((self.x,self.y))
-        n = len(self.none) ; N = n-1
+        n = len(self.none)
         end = self.GameOver(Board,self.finishers,n)
         if end is not None:
             if (end==1 and self.turn==1) or (end==-1 and self.turn==-1):
@@ -31,7 +72,7 @@ class Improved(TicTacToe):
             elif end==0:
                 self.draw+=1
                 return
-        self.Score(self.none,n,Board,self.turn*-1,end,N)
+        self.Score(self.none,n,Board,self.turn*-1,end,n-1)
 
     def Score(self,none,n,board,turn,end,N):
         if (end==1 and self.turn==1) or (end==-1 and self.turn==-1):
@@ -97,13 +138,13 @@ class Basic(TicTacToe):
         Board = [line[:] for line in self.board]
         self.Move(self.x,self.y,Board,self.turn)
         self.none.remove((self.x,self.y))
-        n = len(self.none) ; N = n-1
+        n = len(self.none)
         end = self.GameOver(Board,self.finishers,n)
         if end is not None:
             self.score+=1
             self.leafs+=1
             return
-        self.Score(self.none,n,Board,self.turn*-1,end,N)
+        self.Score(self.none,n,Board,self.turn*-1,end,n-1)
 
     def Score(self,none,n,board,turn,end,N):
         if end is not None:
@@ -161,7 +202,7 @@ class Safe(TicTacToe):
         Board = [line[:] for line in self.board]
         self.Move(self.x,self.y,Board,self.turn)
         self.none.remove((self.x,self.y))
-        n = len(self.none) ; N = int(n)-1
+        n = len(self.none)
         end = self.GameOver(Board,self.finishers,n)
         if end is not None:
             if (end==1 and self.turn==1) or (end==-1 and self.turn==-1):
@@ -172,7 +213,7 @@ class Safe(TicTacToe):
                 self.lose+=1
                 self.leafs+=1
                 return
-        self.Score(self.none,n,Board,self.turn*-1,end,N)
+        self.Score(self.none,n,Board,self.turn*-1,end,n-1)
 
     def Score(self,none,n,board,turn,end,N):
         if end is not None:

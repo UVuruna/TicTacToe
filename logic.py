@@ -89,30 +89,31 @@ class TicTacToe:
     def Move(self,x,y,board,turn):
         board[y][x] = turn==1
 
-    def Total_Leafs_PerLevel(self,N,n): # last 2 levels == same leaf number ; N==Depth ; n==Level
-        if n==1: # moze n==0 then return 1
+    def Horizontal_Lvl(self,N,n):
+        if n==1:
             return N
-        return self.Total_Leafs_PerLevel(N,n-1)*(N+1-n)
+        return self.Horizontal_Lvl(N,n-1)*(N+1-n)
 
-    def Total_Combinations_up_to_Level(self,N,n):
+    def Total_upTo_Horizontal_Lvl(self,N,n):
         suma=0
         for i in range(1,n+1):
-            suma+=self.Total_Leafs_PerLevel(N,i)
+            suma+=self.Horizontal_Lvl(N,i)
         return suma
 
-    def Work_per_Thread(self):
+    def Optimal_Work(self):
         none = len(self.None_Position())
-        for n in range(none,0,-1):
-            x = self.Total_Combinations_up_to_Level(none,n)
-            if x<10**7:
-                return x,n, x/none
+        for n in range(3,none+1):
+            x = self.Horizontal_Lvl(none,n)
+            if x>3*10**6:
+                return n if x<7*10**6 else n-1
+
             
 if __name__=='__main__':
     TicTac = TicTacToe(5)
-    for i in TicTac.Finishing_Lines():
-        print(i)
+    #for i in TicTac.Finishing_Lines():
+        #print(i)
 
-    combinations,moves,combPerMove = TicTac.Work_per_Thread()
-    print(f'{combinations:,} moves ; {moves} levels deep ; {combPerMove:,.0f} moves per Thread')
-    print(f'{TicTac.Total_Combinations_up_to_Level(9,9):,}')
-    print(f'{TicTac.Total_Combinations_up_to_Level(25,25):,}')
+    depth = TicTac.Optimal_Work()
+    print(f'{depth} levels deep')
+    print(f'{TicTac.Horizontal_Lvl(49,4):,}')
+    print(f'{TicTac.Horizontal_Lvl(20,5):,}')

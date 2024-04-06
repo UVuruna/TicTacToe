@@ -1,4 +1,3 @@
-
 class TicTacToe:
     finishers = None
     def __init__(self,scale,WinN=None) -> None:
@@ -67,7 +66,7 @@ class TicTacToe:
             else:
                 return 1 if game_over else -1
         return None if none else 0
-    
+
     def Evaluate(self,board,finishers,none):
         for line in finishers:
             game_over = list()
@@ -89,31 +88,40 @@ class TicTacToe:
     def Move(self,x,y,board,turn):
         board[y][x] = turn==1
 
+    def TurnOver(self):
+        self.turn*=-1
+
     def Horizontal_Lvl(self,N,n):
         if n==1:
             return N
         return self.Horizontal_Lvl(N,n-1)*(N+1-n)
 
-    def Total_upTo_Horizontal_Lvl(self,N,n):
+    def Total_to_Horizontal_Lvl(self,N,n):
         suma=0
         for i in range(1,n+1):
             suma+=self.Horizontal_Lvl(N,i)
         return suma
 
-    def Optimal_Work(self):
-        none = len(self.None_Position())
-        for n in range(3,none+1):
-            x = self.Horizontal_Lvl(none,n)
-            if x>3*10**6:
-                return n if x<7*10**6 else n-1
+    def Optimal_Work(self,BlankCount):
+        for n in range(BlankCount,1,-1):
+            x = self.Total_to_Horizontal_Lvl(BlankCount,n)
+            if x< 7*10**6:
+                return n
 
             
 if __name__=='__main__':
-    TicTac = TicTacToe(5)
+    game = TicTacToe(5)
     #for i in TicTac.Finishing_Lines():
         #print(i)
+    import time
+    st = time.time_ns()
+    N = 1000
+    for _ in range(N):
+        for n in range(10,26):
+            depth = game.Optimal_Work(n)
+    en = time.time_ns()
+    print(f'{((en-st)/10**3)/(15*N):,.3f} mikro s')
 
-    depth = TicTac.Optimal_Work()
     print(f'{depth} levels deep')
-    print(f'{TicTac.Horizontal_Lvl(49,4):,}')
-    print(f'{TicTac.Horizontal_Lvl(20,5):,}')
+    print(f'{game.Horizontal_Lvl(49,4):,}')
+    print(f'{game.Horizontal_Lvl(20,5):,}')

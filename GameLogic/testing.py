@@ -1,6 +1,6 @@
 import time
 import random
-from logic import TicTacToe
+from Logic import TicTacToe
 
 def Game_Simulation(pc1,pc2,PRINT):
     game = TicTacToe(3)
@@ -126,7 +126,7 @@ def FunctionTiming(func:callable,n,unit,*args):
 if __name__=='__main__':
 
     game1 = TicTacToe(3)
-    Game_Simulation(ai.basic.AI,ai.safe.AI,game1)
+    #Game_Simulation(basicM.AI,ai.safe.AI,game1)
 
     #FunctionTiming(Total_Combinations_up_to_Level,10**5,'micro s',25,4)
     #FunctionTiming(Game_Simulation,30,'s',ai.improved.AI,ai.improved.AI,False)

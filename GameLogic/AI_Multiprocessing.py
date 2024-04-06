@@ -1,34 +1,18 @@
-from logic import TicTacToe
+try:
+    from GameLogic.Logic import TicTacToe
+except ModuleNotFoundError:
+    from Logic import TicTacToe
 import random
 import multiprocessing
-
-# Much FASTER with MORE CALCULATIONS (Recursions)
-    # Much SLOWER with LESS CALCULATIONS (Recursions)
-
-# Prazan board 3x3 ; 255,168 resenja (vise od toga radi) ; 986,409 poteza (manje od toga radi)
-    # Average 100 repeats Multiprocessing:
-        # Improved je:  335.98 ms    vs     THREADING: 931.07 ms
-        # Basic je:     322.91 ms    vs     THREADING: 903.51 ms
-        # Safe je:      323.15 ms    vs     THREADING: 910.05 ms
-
-# Preostalo 8 poteza ; 25,872 resenja
-    # Average 100 repeats both:
-        # Improved je:  195.01 ms    vs     THREADING: 96.44 ms
-        # Basic je:     192.81 ms    vs     THREADING: 93.02 ms
-        # Safe je:      192.51 ms    vs     THREADING: 92.78 ms
-
-# Preostala 4 poteza ; 21 resenje
-    # Average 1,000 repeats Threading
-        # Improved je:  161.15 ms    vs     THREADING: 0.63 ms
-        # Basic je:     156.86 ms    vs     THREADING: 0.63 ms
-        # Safe je:      155.15 ms    vs     THREADING: 0.64 ms
 
 def worker(thread):
     thread.run()
     return thread
 
 def MultiAnalyze(AI,board,finishers,turn,none):
+    AI.turn = turn
     Threads = []
+    
     for xy in none:
         t = AI(xy[0],xy[1],board,finishers,turn,none)
         Threads.append(t)
@@ -39,10 +23,10 @@ def MultiAnalyze(AI,board,finishers,turn,none):
         with multiprocessing.Pool(processes=len(none)) as pool:
             result = pool.map(worker, shared_list)
 
-    xy = AI.BestMove(result) if str(AI)[27:-2]!="Basic" else AI.BestMove(result,turn)
-    return xy
+    xy = AI.BestMove(result) #if str(AI)[27:-2]!="BasicM" else AI.BestMove(result,turn)
+    return xy#,result # PRIVREMENO RESULT
 
-class Improved(TicTacToe):
+class ImprovedM(TicTacToe):
     def __init__(self, x,y, board,finishers,turn,none):
         self.x = x
         self.y = y
@@ -89,10 +73,9 @@ class Improved(TicTacToe):
         for i in range(n):
             local_board = [line[:] for line in board]
             local_none = none[:]
-            local_turn = int(turn)
             x,y = local_none.pop(i)
-            self.Move(x,y,local_board,local_turn)
-            local_turn*=-1
+            self.Move(x,y,local_board,turn)
+            local_turn = turn*-1
             end = self.GameOver(local_board,self.finishers,n-1)
             self.Score(local_none,n-1,local_board,local_turn,end,N) # RECURSION
 
@@ -121,15 +104,18 @@ class Improved(TicTacToe):
             random.choice(best) if len(best)>1 else\
             random.choice(([(t.x,t.y) for t in threads]))
     
-class Basic(TicTacToe):
+class BasicM(TicTacToe):
+    turn = None
+
     def __init__(self, x,y, board,finishers,turn,none):
-        self.x = x
-        self.y = y
         self.board  = board
         self.finishers = finishers
         self.turn = turn
         self.none = none
 
+        self.x = x
+        self.y = y
+        
         self.score = 0
         self.leafs = 0
         self.lose_in_one = False
@@ -156,14 +142,13 @@ class Basic(TicTacToe):
         for i in range(n):
             local_board = [line[:] for line in board] # Mnogo brze (>3*) od deepcopy
             local_none = none[:]
-            local_turn = int(turn)
             x,y = local_none.pop(i)
-            self.Move(x,y,local_board,local_turn)
-            local_turn*=-1
+            self.Move(x,y,local_board,turn)
+            local_turn = turn*-1
             end = self.GameOver(local_board,self.finishers,n-1)
             self.Score(local_none,n-1,local_board,local_turn,end,N)
 
-    def BestMove(threads:list,turn):
+    def BestMove(threads:list):
         best = list()
         bestScore:float
         for t in threads:
@@ -174,7 +159,7 @@ class Basic(TicTacToe):
                 bestScore = t.score/t.leafs
             else:
                 score = t.score/t.leafs
-                if (score>bestScore and turn==1) or (score<bestScore and turn==-1):
+                if (score>bestScore and BasicM.turn==1) or (score<bestScore and BasicM.turn==-1):
                     bestScore=score
                     best.clear()
                     best.append((t.x,t.y))
@@ -184,7 +169,7 @@ class Basic(TicTacToe):
             random.choice(best) if len(best)>1 else\
             random.choice(([(t.x,t.y) for t in threads]))
     
-class Safe(TicTacToe):
+class SafeM(TicTacToe):
     def __init__(self, x,y, board,finishers,turn,none):
         self.x = x
         self.y = y
@@ -226,10 +211,9 @@ class Safe(TicTacToe):
         for i in range(n):
             local_board = [line[:] for line in board]
             local_none = none[:]
-            local_turn = int(turn)
             x,y = local_none.pop(i)
-            self.Move(x,y,local_board,local_turn)
-            local_turn*=-1
+            self.Move(x,y,local_board,turn)
+            local_turn = turn*-1
             end = self.GameOver(local_board,self.finishers,n-1)
             self.Score(local_none,n-1,local_board,local_turn,end,N)
     
